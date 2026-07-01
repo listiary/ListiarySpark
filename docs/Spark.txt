@@ -1,0 +1,40 @@
+about: Spark framework v 0.3
+Spark is an administrative CLI interface for administering the Listiary database layer.
+Spark is very powerful and unforgiving - be careful which script you are invoking and read the documentation.
+Spark is licensed under ...
+For more information visit documentation.listiary.org/...
+
+
+
+help
+command: php spark.php help [ <PRESENTATION_FLAGS> ] | -h [ <PRESENTATION_FLAGS> ]
+flags: 'help', 'h', '-h', '-help', '--help'
+Display help / usage message
+-----------------------------------------------------------------------------------------------------
+
+config-make
+config-make-online
+config-make-offline
+command: php spark.php config-make [CONFIG_NAME] [-d] [ <PRESENTATION_FLAGS> ]
+flags: 'config-make'
+Create a new config file for a Listiary database connection, By asking the user for the credentials,
+And saving it in the configs folder.
+CONFIG_NAME - set a custom name for the config.
+-d - creates a config name including a timestamp in the filename, so that you don't overwrite previous one.
+
+-----------------------------------------------------------------------------------------------------
+<PRESENTATION_FLAGS>
+auto
+flags: 'auto', 'a', '-a', '-auto', '--auto'
+Removes the colors, for use in scripting.
+In PHP CLI, the console colors are special command characters that we output to change the color.
+This flags stops this behavior, so that no color command characters are outputted.
+
+hide-banner
+flags: 'hide-banner', 'hb', '-hidebanner', '-hb', '--hide-banner'
+Removes the ASCII art banner, for use in scripting.
+
+theme=<THEME>
+flags: 'theme=GREEN', 'theme=default' ...
+theme names: 'GREEN', 'DBLUE', 'LBLUE', 'PASTEL', 'EARTH', 'CONTRAST', 'DEFAULT', 'VIOLET', 'CYAN'
+Sets the color theme of the CLI text output.
