@@ -1,0 +1,3 @@
+_**In the future, `help` can support a command parameter - `php spark.php help config-make-offline`**_
+
+linux man command style

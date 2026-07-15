@@ -1,0 +1,6 @@
+2. Bulk Files
+This section aims at testing basic functionality for the Bulk Files commands.
+_**We will be able to do a deep upload/download - where**_
+_**file like foods.vegies.carrot-dishes.ds is resolved to `\foods\vegies\carrot-dishes.ds`**_
+_**and uploaded back like `foods.vegies.carrot-dishes.ds`**_
+_**Can also add max to `files-upload`**_

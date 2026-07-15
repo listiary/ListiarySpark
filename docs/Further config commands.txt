@@ -1,0 +1,12 @@
+## Further config commands
+	
+_**config-select - use with configs-list to select a config and save it to spark's temp config**_<br>
+_**config-set - use it to edit a config's value**_<br>
+_**config-edit - use it to open a config in default editor**_<br>
+_**config-rename - use it to rename a config**_<br>
+
+
+_**can add the concept of selected config, instead of showing "config.php" when none is selected**_
+_**so 'php spark.php config-show' - shows the selected config**_
+_**also, we can run 'php spark.php configs-list' and then something like 'php spark.php config-show 2' - to show config No 2.**_
+_**much like diskpart util in Windows**_

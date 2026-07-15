@@ -1,0 +1,3 @@
+## config-test
+Few simple tests, with and without default config name.
+_**we should also test the URL of the compiler, in the SparkCore function**_
