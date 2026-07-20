@@ -78,9 +78,3 @@ in Listiary they are designed to manage or bring.
 	<br><br>
 
 	`metadata-view` - Output the contents of a single metadata entry.
-
-
-
-
-
-
