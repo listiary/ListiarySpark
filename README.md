@@ -16,3 +16,9 @@ The Listiary Spark framework, or Spark for short, consists of a core library and
 * **Spark CLI**: A command-line interface for administering Listiary instances from the console.
 * **Spark Web**: A planned HTTP API interface for Spark, providing the same functionality as Spark CLI remotely.
 * **Listiary Admin Module**: The administrative interface built into Listiary. It provides much of the same functionality as Spark, but is limited to the current wiki instance.
+
+## Get in touch  
+- Use GitHub's issue reporter on the right
+- Send an email contact@listiary.org
+- Or, contact the founder directly at vchernev91@abv.bg (might take a few days)
+- You can reach him on Viber as well: +359-885-18-05-86
