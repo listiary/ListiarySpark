@@ -87,7 +87,7 @@ class Action
     }
 
     //Create a stub file and upload and compile it
-    //parameters['item', 'namespace']
+    //parameters['item', 'namespace', 'isrnode', 'author']
     public static function Action_CreateStub(mysqli $link, array $parameters): array {
 
         $log = "";
@@ -103,20 +103,44 @@ class Action
             $item = $parameters['item'];
             $namespace = $parameters['namespace'];
             $fileName = $namespace;
+			$author = "ADD_AUTHOR";
+			$isrnode = false;
+			if(Validator::parameterExists($parameters, 'author'))
+				if(!Validator::isStringNullOrEmpty($parameters['author']))
+					$author = $parameters['author'];
+			if(Validator::parameterExists($parameters, 'isrnode'))
+				$isrnode = $parameters['isrnode'];
 
             //escape params
             $itemEscaped = mysqli_real_escape_string($link, $item);
             $nameEscaped = mysqli_real_escape_string($link, $namespace);
             
             //generate .DS source file
-			$contents = "directives ->\n\n";
-			$contents .= "  language-version <1.0>,\n";
-			$contents .= "  namespace <{$nameEscaped}>,\n";
-			$contents .= "  filename <{$nameEscaped}.ds>,\n";
-			$contents .= "  authors <ADD_AUTHOR>;\n\n\n";
-			$contents .= $itemEscaped . " <.rnode> ->\n\n";
-			$contents .= "  ITEM1,\n";
-			$contents .= "  ITEM2;";
+			$lastDotPos = strrpos($nameEscaped, '.');
+			if($isrnode || $lastDotPos === false)
+			{
+				$contents = "directives ->\n\n";
+				$contents .= "  language-version <1.0>,\n";
+				$contents .= "  namespace <{$nameEscaped}>,\n";
+				$contents .= "  filename <{$nameEscaped}.ds>,\n";
+				$contents .= "  authors <{$author}>;\n\n\n";
+				$contents .= $itemEscaped . " <.rnode> ->\n\n";
+				$contents .= "  ITEM1,\n";
+				$contents .= "  ITEM2;";
+			}
+			else
+			{
+				$beforeDot = substr($nameEscaped, 0, $lastDotPos);
+				$afterDot = substr($nameEscaped, $lastDotPos + 1);
+				$contents = "directives ->\n\n";
+				$contents .= "  language-version <1.0>,\n";
+				$contents .= "  namespace <{$beforeDot}>,\n";
+				$contents .= "  filename <{$nameEscaped}.ds>,\n";
+				$contents .= "  authors <{$author}>;\n\n\n";
+				$contents .= $itemEscaped . " <.{$afterDot}> ->\n\n";
+				$contents .= "  ITEM1,\n";
+				$contents .= "  ITEM2;";
+			}
 
             //put file contents
 			$contentEscaped = mysqli_real_escape_string($link, $contents);
@@ -229,6 +253,10 @@ class Action
 			return ["success" => false, "log" => $log, "result" => null];
 		}
     }
+
+	//Create a source file and upload and compile it. Ask user for the contents
+	//parameters['item', 'namespace', 'text', 'isrnode', 'author']
+	//public static function Action_CreateArticle(mysqli $link, array $parameters): array
 
     //action_show_article_namespace
     //action_rename_namespace

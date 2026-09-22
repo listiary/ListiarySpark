@@ -33,6 +33,7 @@ use Exception, FilesystemIterator, RegexIterator;
 function Execute(array $argv) {
 
 	// get command
+	echo "we here";
 	$command = CommandHandler::GetCommand($argv);
 	$arr = CommandHandler::ReadCommandArgs($argv, $command);
 	$output = null;
@@ -92,6 +93,8 @@ function Execute(array $argv) {
 	//database
 	else if($command == CliCommand::DatabaseTest) Execute_DatabaseTest($arr);
 	else if($command == CliCommand::DatabaseWipe) Execute_DatabaseWipe($arr);
+	else if($command == CliCommand::DatabaseDownload) Execute_DatabaseDownload($arr);
+	else if($command == CliCommand::DatabaseUpload) Execute_DatabaseUpload($arr);
 	else if($command == CliCommand::DatabaseMakeTables) Execute_DatabaseMakeTables($arr);
 	else if($command == CliCommand::DatabaseRecompile) Execute_DatabaseRecompile($arr);
 	else if($command == CliCommand::DatabaseCurate) Execute_DatabaseCurate($arr);
@@ -739,7 +742,7 @@ function Execute_FileUpload(array $arr): void {
 	$uploadDir = $uploadDir . DIRECTORY_SEPARATOR . $filePath;
 	if(!Validator::validateLocalFileReadable($uploadDir)) 
 	{
-		throw new Exception("'{$taskName}' - is not a valid relative file path inside '_uploads'.");
+		throw new Exception("'{$uploadDir}' - is not a valid relative file path inside '_uploads'.");
 	}
 
 	//verify filename
@@ -1089,6 +1092,100 @@ function Execute_DatabaseWipe(array $arr): void {
 
 	//output the log narrative
 	printExecutionLog($output["log"]);
+	ConsoleWriter::consoleBlock();
+	exitProper($output["success"]);
+}
+function Execute_DatabaseDownload(array $arr): void {
+
+	//Make connection
+	if (!@include_once __DIR__ . "/../_configs/config.php") 
+	{
+		throw new Exception("Missing main config file - '_configs/config.php' ");
+	}
+	$link = connectDb();
+	ConsoleWriter::consoleLog("Connection ok");
+	$output = Database::Database_Download($link);
+	mysqli_close($link);
+	ConsoleWriter::consoleLog("Connection closed");
+
+	//output the log narrative
+	printExecutionLog($output["log"]);
+	if (!empty($output["result"])) 
+	{
+		//save file
+		$taskName = date("Ymd-His") . "-database-download";
+		$downloadDir = __DIR__ . '\..\_downloads';
+		$downloadDir = realpath($downloadDir);
+		$downloadDir = $downloadDir . "\\" . $taskName;
+		if (!is_dir($downloadDir)) mkdir($downloadDir, 0755, true);
+		$filename = DB_NAME_PUBLIC . ".sql";
+		$content  = $output["result"]; 
+		$filePath = $downloadDir . '\\' . $filename;
+		$bytesWritten = file_put_contents($filePath, $content);
+		if ($bytesWritten === false) ConsoleWriter::consoleLogError($filename . " - Failed");
+		else ConsoleWriter::consoleLog($taskName . "\\" . $filename . " - Ok ({$bytesWritten} B)");
+	}
+	
+	//exit
+	ConsoleWriter::consoleBlock();
+	exitProper($output["success"]);
+}
+function Execute_DatabaseUpload(array $arr): void {
+
+	//verify path
+	$filePath = $arr['filePath'];
+	$uploadDir = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '_uploads';
+	$uploadDir = realpath($uploadDir);
+	$uploadDir = $uploadDir . DIRECTORY_SEPARATOR . $filePath;
+	if(!Validator::validateLocalFileReadable($uploadDir)) 
+	{
+		throw new Exception("'{$uploadDir}' - is not a valid relative file path inside '_uploads'.");
+	}
+
+	//verify contents
+	$fileNameOnly = basename($uploadDir);
+	$fileContent = file_get_contents($uploadDir);
+	$min = 3; $max = 5000000000;
+	if(!Validator::validateStringByteLength($fileContent, $min, $max)) 
+	{
+		throw new Exception("'{$fileNameOnly}' file size ($size B) is outside the allowed range ({$min} - {$max}).");
+	}
+	if(!Validator::validateStringEncodingUtf8($fileContent)) 
+	{
+		throw new Exception("'{$fileNameOnly}' - is not valid UTF-8 text.");
+	}
+
+	//read file
+	$parameters = [];
+	$parameters['sql'] = $fileContent;
+	//$charCount = mb_strlen($fileContent, 'UTF-8');
+	$byteCount = strlen($fileContent);
+	ConsoleWriter::consoleLog("Red file '{$fileNameOnly}' - ok ({$byteCount} B).");
+
+	//Make connection
+	if (!@include_once __DIR__ . "/../_configs/config.php") 
+	{
+		throw new Exception("Missing main config file - '_configs/config.php' ");
+	}
+	$link = connectDb();
+	ConsoleWriter::consoleLog("Connection ok");
+	$output = Database::Database_Test($link);
+	if($output['result'] == true)
+	{
+		//output the log narrative
+		printExecutionLog($output["log"]);
+		$output = Database::Database_Upload($link, $parameters);
+		ConsoleWriter::consoleLog("Script Executed");
+	}
+
+	mysqli_close($link);
+	ConsoleWriter::consoleLog("Connection closed");
+
+	//output the log narrative
+	printExecutionLog($output["log"]);
+
+	//exit
+	ConsoleWriter::consoleLogNewLine();
 	ConsoleWriter::consoleBlock();
 	exitProper($output["success"]);
 }

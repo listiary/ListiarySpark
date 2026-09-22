@@ -54,6 +54,8 @@ use Exception;
         case DatabaseTest = "database-test";                             //'database-test'
         case DatabaseMakeTables = "database-make-tables";                //'database-make-tables'
         case DatabaseWipe = "database-wipe";                             //'database-wipe'
+        case DatabaseDownload = "database-download";                     //'database-download'
+        case DatabaseUpload = "database-upload";                         //'database-upload'
         case DatabaseRecompile = "database-recompile";                   //'database-recompile'
         case DatabaseCurate = "database-curate";                         //'database-curate'
         case DatabaseCurateIds = "database-curate-ids";                  //'database-curate-ids'
@@ -98,6 +100,8 @@ use Exception;
         private const array DATABASE_MAKE_TABLES = ['database-make-tables'];
         private const array DATABASE_WIPE = ['database-wipe'];
         private const array DATABASE_RECOMPILE = ['database-recompile'];
+        private const array DATABASE_DOWNLOAD = ['database-download'];
+        private const array DATABASE_UPLOAD = ['database-upload'];
         private const array DATABASE_CURATE = ['database-curate'];
         private const array DATABASE_CURATE_IDS = ['database-curate-ids'];
         private const array DATABASE_CURATE_FILENAMES = ['database-curate-filenames'];
@@ -170,6 +174,8 @@ use Exception;
             else if(in_array($command, self::DATABASE_TEST)) return CliCommand::DatabaseTest;
             else if(in_array($command, self::DATABASE_MAKE_TABLES)) return CliCommand::DatabaseMakeTables;
             else if(in_array($command, self::DATABASE_WIPE)) return CliCommand::DatabaseWipe;
+            else if(in_array($command, self::DATABASE_DOWNLOAD)) return CliCommand::DatabaseDownload;
+            else if(in_array($command, self::DATABASE_UPLOAD)) return CliCommand::DatabaseUpload;
             else if(in_array($command, self::DATABASE_RECOMPILE)) return CliCommand::DatabaseRecompile;
             else if(in_array($command, self::DATABASE_CURATE)) return CliCommand::DatabaseCurate;
             else if(in_array($command, self::DATABASE_CURATE_IDS)) return CliCommand::DatabaseCurateIds;
@@ -223,6 +229,8 @@ use Exception;
             else if($command == CliCommand::DatabaseTest) return self::readCommandArgs_PresentationOnly($argv);
             else if($command == CliCommand::DatabaseMakeTables) return self::readCommandArgs_PresentationOnly($argv);
             else if($command == CliCommand::DatabaseWipe) return self::readCommandArgs_PresentationOnly($argv);
+            else if($command == CliCommand::DatabaseDownload) return self::readCommandArgs_PresentationOnly($argv);
+            else if($command == CliCommand::DatabaseUpload) return self::readCommandArgs_DatabaseUpload($argv);
             else if($command == CliCommand::DatabaseRecompile) return self::readCommandArgs_PresentationOnly($argv);
             else if($command == CliCommand::DatabaseCurate) return self::readCommandArgs_PresentationOnly($argv);
             else if($command == CliCommand::DatabaseCurateIds) return self::readCommandArgs_PresentationOnly($argv);
@@ -1176,6 +1184,52 @@ use Exception;
                 else if($i == 1 && Validator::validateCanonicalDescribeNamespaceName($arguments[$i]))
                 {
                     $result['namespace'] = $arguments[$i];
+                }
+                else
+                {
+                    $result['error'] = "invalid argument No'{$i}'";
+                    $result['success'] = false;
+                }
+            }
+
+            return $result;
+        }
+        private static function readCommandArgs_DatabaseUpload($argv): array {
+
+            $arguments = array_slice($argv, 2);
+            $argCount = count($arguments);
+            $result = [ 'success' => true, 'filePath' => null ];
+
+            $inPresentationTail = false;
+            for ($i = 0; $i < $argCount; $i++) 
+            {
+                $argument = strtolower($arguments[$i]);
+                if (in_array($argument, self::ARGUMENTFLAGS_AUTO))
+                {
+                    ConsoleWriter::$manualMode = false;
+                    $result['manualMode'] = false;
+                    $inPresentationTail = true;
+                }
+                else if (in_array($argument, self::ARGUMENTFLAGS_HIDE_BANNER))
+                {
+                    ConsoleWriter::$printBanner = false;
+                    $result['printBanner'] = false;
+                    $inPresentationTail = true;
+                }
+                else if(str_starts_with($argument, self::ARGUMENTFLAGS_THEME))
+                {
+                    $theme = self::readThemeArgument($argument, $i);
+                    if($theme === null)
+                    {
+                        $result['error'] = "invalid argument No'{$i}'";
+                        $result['success'] = false;
+                        return $result;
+                    }
+                    $inPresentationTail = true;
+                }
+                else if($i == 0)
+                {
+                    $result['filePath'] = $arguments[$i];
                 }
                 else
                 {

@@ -75,6 +75,19 @@ class ConsoleWriter
 		//Spark is licensed under ...
 		//For more information visit documentation.listiary.org/...
 
+        $firstWordOfCommand = "";
+        foreach (CommandInformer::$ShortCommands as $Command)
+        {
+            $fi = strtok($Command, '-');
+            if($firstWordOfCommand !== $fi && $firstWordOfCommand . 's' !== $fi) 
+            {
+                self::consoleLogNewLine();
+                $firstWordOfCommand = $fi;
+            }
+            self::consoleLogInfo(self::getScriptName() . " " . $Command);
+        }
+        return;
+
         foreach (CommandInformer::$Commands as $Command)
         {
             self::consoleLogNewLine(); self::consoleLogNewLine(); self::consoleLogNewLine();

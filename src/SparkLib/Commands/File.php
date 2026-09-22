@@ -119,7 +119,7 @@ class file
 		}
     }
 
-    //Uploads given data representing a Describe file to the database
+    //Upload given data representing a Describe file to the database
     //parameters['fileName', 'fileContent']
     public static function File_Put(mysqli $link, array $parameters): array {
 
@@ -614,7 +614,7 @@ class file
 		}
     }
 
-    //Uploads given data representing Describe files to the database
+    //Upload given data representing Describe files to the database
     //parameters['files'][FILENAME][FILETEXT]
     public static function Files_Upload(mysqli $link, array $parameters): array {
         

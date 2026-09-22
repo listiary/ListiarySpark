@@ -18,6 +18,19 @@ use Exception;
 // }
 class CommandInformer
 {
+    public static array $ShortCommands = [
+
+        "help",
+        "config-make", "config-make-online", "config-make-offline",
+        "configs-list", "config-show", "config-test",
+        "file-view", "file-download", "file-upload", "file-compile", "file-delete",
+        "files-count", "files-list", "files-compile", "files-download", "files-upload", "files-delete", 
+        "json-view", "json-download", "json-upload", "json-delete",
+        "jsons-count", "jsons-list", "jsons-download", "jsons-delete",
+        "database-test", "database-wipe", "database-make-tables", "database-recompile", 
+        "database-curate", "database-curate-ids", "database-curate-filenames", "database-find-orphans",
+        "action-delete-article", "action-create-stub"
+    ];
     public static array $Commands = [
         [ //help
             'Usage' => [

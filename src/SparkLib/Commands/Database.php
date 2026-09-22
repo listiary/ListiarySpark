@@ -1,6 +1,7 @@
 <?php
 namespace SparkLib\Commands;
 use Exception, Throwable, mysqli;
+ini_set('memory_limit', '512M');			//or '-1' needed for the fetch
 
     error_reporting(E_ALL);
 	ini_set('display_errors', 1);
@@ -196,6 +197,126 @@ class Database
 			return ["success" => false, "log" => $log, "result" => null];
         }
     }
+
+	//Download a copy of the database
+	public static function Database_Download(mysqli $link): array {
+    
+		$log = "";
+		$sqlScript = "";
+
+		try 
+		{
+			// 1. Get all tables
+			$tables = [];
+			$result = $link->query("SHOW TABLES");
+			while ($row = $result->fetch_row())
+			{
+				$tables[] = $row[0];
+			}
+
+			// 2. Loop through each table
+			foreach ($tables as $table) 
+			{
+				// Get table structure
+				$result = $link->query("SHOW CREATE TABLE `$table`");
+				$row = $result->fetch_row();
+				$sqlScript .= "\n\nDROP TABLE IF EXISTS `$table`;\n";
+				$sqlScript .= $row[1] . ";\n\n";
+
+				// Get table data
+				$result = $link->query("SELECT * FROM `$table`");
+				$columnCount = $result->field_count;
+
+				while ($row = $result->fetch_row()) 
+				{
+					$sqlScript .= "INSERT INTO `$table` VALUES(";
+					for ($j = 0; $j < $columnCount; $j++) 
+					{
+						if (isset($row[$j]))
+						{
+							// Escape the string to prevent SQL breakage
+							$escapedString = $link->real_escape_string($row[$j]);
+							$sqlScript .= "'" . $escapedString . "'";
+						} 
+						else
+						{
+							$sqlScript .= "NULL";
+						}
+						if ($j < ($columnCount - 1))
+						{
+							$sqlScript .= ",";
+						}
+					}
+					$sqlScript .= ");\n";
+				}
+			}
+
+			$log .= "SCRIPT SUCCEEDED";
+			return ["success" => false, "log" => $log, "result" => $sqlScript];
+		}
+		catch (Throwable $ex) 
+		{
+			$log .= "EXCEPTION: " . $ex->getMessage() . " (line " . $ex->getLine() . ")" . NEW_LINE;
+			$log .= "SCRIPT FAILED";
+			return ["success" => false, "log" => $log, "result" => null];
+        }
+	}
+
+	//Upload a copy of the database
+	public static function Database_Upload(mysqli $link, array $parameters): array {
+    
+		$log = "";
+
+		try 
+		{
+			$sqlScript = $parameters['sql'];
+
+			//validate input
+            Validator::validateParameterExists($parameters, "sql");
+			Validator::validateParameterNotEmpty($parameters, "sql");
+
+			// 1. Disable foreign key checks to prevent errors when dropping/creating related tables
+            $link->query("SET FOREIGN_KEY_CHECKS = 0");
+
+            // 2. Execute the batch of SQL statements
+            if ($link->multi_query($sqlScript)) 
+            {
+                do 
+                {
+                    // Store and free any results to move the pointer forward
+                    if ($result = $link->store_result()) 
+                    {
+                        $result->free();
+                    }
+                    
+                    // Check if the specific query in the batch threw an error
+                    if ($link->errno) 
+                    {
+                        throw new Exception("MySQL Error: " . $link->error);
+                    }
+                } 
+                while ($link->more_results() && $link->next_result());
+            } 
+            else 
+            {
+                // Catch errors on the very first query of the batch
+                throw new Exception("MySQL Error: " . $link->error);
+            }
+
+            // 3. Re-enable foreign key checks and return
+            $link->query("SET FOREIGN_KEY_CHECKS = 1");
+			$log .= "SCRIPT SUCCEEDED";
+			return ["success" => false, "log" => $log];
+		}
+		catch (Throwable $ex) 
+		{
+			// Ensure foreign key checks are turned back on even if it fails
+            $link->query("SET FOREIGN_KEY_CHECKS = 1");
+			$log .= "EXCEPTION: " . $ex->getMessage() . " (line " . $ex->getLine() . ")" . NEW_LINE;
+			$log .= "SCRIPT FAILED";
+			return ["success" => false, "log" => $log, "result" => null];
+        }
+	}
 
 
 

@@ -54,7 +54,7 @@ class Validator
     }
     public static function validateParameterIsStringInRange(array $parameters, string $param, int $min, int $max) {
 
-        if (!self::validateStringByteLength($parameters[$param], 3, 500000))
+        if (!self::validateStringByteLength($parameters[$param], $min, $max))
         {
             throw new Exception("Invalid '{$param}' parameter length");
         }
@@ -68,6 +68,11 @@ class Validator
     }
 
 
+    public static function parameterExists(array $parameters, string $param) {
+
+        if (array_key_exists($param, $parameters)) return true;
+        else return false;
+    }
     public static function validateConfigName(?string $name): bool {
 
         if(self::isStringNullOrEmpty($name)) return false;

@@ -14,7 +14,7 @@ use Exception, Throwable, mysqli;
 
 class Json
 {
-    //Output the contents of a single json
+    //Output the contents of a single JSON file
     //parameters['jsonName']
     public static function Json_Fetch(mysqli $link, array $parameters): array {
 
@@ -69,7 +69,7 @@ class Json
 		}
     }
 
-    //Delete a single json
+    //Delete a single JSON file
     //parameters['jsonName']
     public static function Json_Delete(mysqli $link, array $parameters): array {
 
@@ -117,7 +117,7 @@ class Json
 		}
     }
 
-    //Uploads given data representing a Describe file to the database
+    //Upload given data representing a JSON file to the database
     //parameters['jsonName', 'jsonContent']
     public static function Json_Put(mysqli $link, array $parameters): array {
 
