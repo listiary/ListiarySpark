@@ -1,7 +1,0 @@
-configs-list or other funcs might accept some pattern matching in the parameter they take
-
-
-
-
-Few simple tests, with and without default config name.
-_**might add a pattern matching here - 'php spark.php configs-list [PATTERN]'**_
